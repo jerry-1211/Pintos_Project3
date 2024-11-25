@@ -8,6 +8,8 @@
 #include "hash.h"
 #include "../debug.h"
 #include "threads/malloc.h"
+#include  "vm/vm.h"
+
 
 #define list_elem_to_hash_elem(LIST_ELEM)                       \
 	list_entry(LIST_ELEM, struct hash_elem, list_elem)
@@ -21,9 +23,7 @@ static void rehash (struct hash *);
 
 /* Initializes hash table H to compute hash values using HASH and
    compare hash elements using LESS, given auxiliary data AUX. */
-bool
-hash_init (struct hash *h,
-		hash_hash_func *hash, hash_less_func *less, void *aux) {
+bool hash_init (struct hash *h,hash_hash_func *hash, hash_less_func *less, void *aux) {
 	h->elem_cnt = 0;
 	h->bucket_cnt = 4;
 	h->buckets = malloc (sizeof *h->buckets * h->bucket_cnt);
@@ -392,3 +392,19 @@ remove_elem (struct hash *h, struct hash_elem *e) {
 	list_remove (&e->list_elem);
 }
 
+
+
+uint64_t hash_func (const struct hash_elem *e, void *aux){
+	struct page *p = hash_entry(e,struct page, hash_elem);
+	return hash_bytes(&(p->va), sizeof(p->va));
+}
+
+bool less_func (const struct hash_elem *a, const struct hash_elem *b, void *aux){
+	struct page *page_a = hash_entry(a, struct page, hash_elem);
+	struct page *page_b = hash_entry(b, struct page, hash_elem);
+	return page_a->va < page_b->va ;
+
+}
+void action_func (struct hash_elem *e, void *aux){
+	
+}
