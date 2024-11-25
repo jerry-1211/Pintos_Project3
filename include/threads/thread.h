@@ -1,3 +1,6 @@
+#define USERPROG  // Project 2: 충돌 방지
+#define VM
+
 #ifndef THREADS_THREAD_H
 #define THREADS_THREAD_H
 
@@ -11,7 +14,6 @@
 #include "vm/vm.h"
 #endif
 
-#define USERPROG  // Project 2: 충돌 방지
 
 /* States in a thread's life cycle. */
 enum thread_status {
@@ -141,6 +143,7 @@ typedef struct thread {
     struct semaphore wait_sema;  // exit_sema를 기다릴 때 사용
     /** ----------------------- */
 #endif
+
 #ifdef VM
     /* Table for whole virtual memory owned by thread. */
     struct supplemental_page_table spt;

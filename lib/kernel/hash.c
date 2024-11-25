@@ -9,6 +9,7 @@
 #include "../debug.h"
 #include "threads/malloc.h"
 #include  "vm/vm.h"
+#include "lib/kernel/hash.h"
 
 
 #define list_elem_to_hash_elem(LIST_ELEM)                       \
@@ -405,6 +406,7 @@ bool less_func (const struct hash_elem *a, const struct hash_elem *b, void *aux)
 	return page_a->va < page_b->va ;
 
 }
+
 void action_func (struct hash_elem *e, void *aux){
-	
+
 }
