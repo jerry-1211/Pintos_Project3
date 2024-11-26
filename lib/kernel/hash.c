@@ -120,8 +120,7 @@ hash_replace (struct hash *h, struct hash_elem *new) {
 
 /* Finds and returns an element equal to E in hash table H, or a
    null pointer if no equal element exists in the table. */
-struct hash_elem *
-hash_find (struct hash *h, struct hash_elem *e) {
+struct hash_elem *hash_find (struct hash *h, struct hash_elem *e) {
 	return find_elem (h, find_bucket (h, e), e);
 }
 
@@ -392,8 +391,6 @@ remove_elem (struct hash *h, struct hash_elem *e) {
 	h->elem_cnt--;
 	list_remove (&e->list_elem);
 }
-
-
 
 uint64_t hash_func (const struct hash_elem *e, void *aux){
 	struct page *p = hash_entry(e,struct page, hash_elem);
