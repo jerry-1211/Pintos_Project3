@@ -90,7 +90,6 @@ int main(void) {
     tss_init();
     gdt_init();
 #endif
-
     /* 인터럽트 핸들러를 초기화합니다. */
     intr_init();
     timer_init();

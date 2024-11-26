@@ -120,12 +120,28 @@ vm_evict_frame (void) {
 /* palloc() and get frame. If there is no available page, evict the page
  * and return it. This always return valid address. That is, if the user pool
  * memory is full, this function evicts the frame to get the available memory
- * space.*/
+ * space.
+ * Gets a new physical page from the user pool by calling palloc_get_page.
+ * When successfully got a page from the user pool, also allocates a frame,initialize its members, and returns it.
+ * After you implement vm_get_frame, you have to allocate all user space pages (PALLOC_USER) through this function.
+ * You don't need to handle swap out for now in case of page allocation failure. Just mark those case with PANIC ("todo") for now.
+*/
 static struct frame *
 vm_get_frame (void) {
-	struct frame *frame = NULL;
 	/* TODO: Fill this function. */
+	// 목표 : 유저 pool로부터 새로운 프레임 얻기 
+	struct frame *frame = NULL;
 
+	uint8_t *kva = palloc_get_page(PAL_USER);   // userpool에서 page 할당
+
+	// 할당 실패하는 경우 PANIC 처리 -> 이후 swap 구현 
+	if(kva==NULL){   
+		PANIC ("todo");
+	}
+
+	frame = (struct frame *)malloc(sizeof(struct frame));
+	frame->kva = kva;
+	
 	ASSERT (frame != NULL);
 	ASSERT (frame->page == NULL);
 	return frame;
