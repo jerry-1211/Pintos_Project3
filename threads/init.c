@@ -116,7 +116,7 @@ int main(void) {
 
     printf("Boot complete.\n");
 
-    /* 커널 명령줄에 지정된 작업을 실행합니다. */
+    /* 커널 명령줄에 지정된 작업을 실행니다. */
     run_actions(argv);
 
     /* 마무리. */
@@ -140,6 +140,18 @@ static void bss_init(void) {
 /* 커널 가상 매핑으로 페이지 테이블을 채운 다음 새 페이지 디렉터리를 사용하
  * 도록 CPU를 설정합니다.
  * base_pml4부터 pml4를 가리킵니다. */
+
+// 커널이 물리 메모리를 관리하기 위해 물리 메모리 전체 부분을
+// 커널 가상 주소 공간에 매핑
+// 이를 통해 물리 메모리 전체를 가상 주소를 통해 접근 가능
+// 사용자 가상 주소 공간 매핑은 별도로 이뤄짐
+// 사용자 가상 주소 공간은 load_segment나 setup_stack 같은 함수에서
+// 사용자 가상 주소와 물리 메모리 매핑 설정 
+// (+ plus) 물리 메모리는 시스템의 제한된 자원으로, 
+// 이를 전체적으로 추적하고 관리해야 함
+// 사용자 프로그램이 물리 메모리를 직접 접근하지 않고, 커널을 통해서만 요청하도록 설계 됨
+// ex) 메모리 할당하려면 malloc, 커널이 물리 메모리에서 필요한 페이지 할당해줌
+
 static void paging_init(uint64_t mem_end) {
     uint64_t *pml4, *pte;
     int perm;
@@ -148,17 +160,19 @@ static void paging_init(uint64_t mem_end) {
     extern char start, _end_kernel_text;
     // Maps physical address [0 ~ mem_end] to
     //   [LOADER_KERN_BASE ~ LOADER_KERN_BASE + mem_end].
+
+    // 물리 주소 0 ~ mem_end를 커널 가상 주소 공간으로 매핑
     for (uint64_t pa = 0; pa < mem_end; pa += PGSIZE) {
         uint64_t va = (uint64_t)ptov(pa);
 
         perm = PTE_P | PTE_W;
         if ((uint64_t)&start <= va && va < (uint64_t)&_end_kernel_text)
+            // 커널 텍스트 영역은 읽기 전용 나머지는 읽기/쓰기 가능 
             perm &= ~PTE_W;
 
         if ((pte = pml4e_walk(pml4, va, 1)) != NULL)
             *pte = pa | perm;
     }
-
     // reload cr3
     pml4_activate(0);
 }

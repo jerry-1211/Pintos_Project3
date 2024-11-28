@@ -187,6 +187,12 @@ vm_claim_page (void *va UNUSED) {
 }
 
 /* Claim the PAGE and set up the mmu. */
+/* Claims, meaning allocate a physical frame, a page.
+ * You first get a frame by calling vm_get_frame (which is already done for you in the template).
+ * Then, you need to set up the MMU.
+ * In other words, add the mapping from the virtual address to the physical address in the page table.
+ * The return value should indicate whether the operation was successful or not.
+ */
 static bool
 vm_do_claim_page (struct page *page) {
 	struct frame *frame = vm_get_frame ();
@@ -196,8 +202,15 @@ vm_do_claim_page (struct page *page) {
 	page->frame = frame;
 
 	/* TODO: Insert page table entry to map page's VA to frame's PA. */
-
-	return swap_in (page, frame->kva);
+	// * 페이지 테이블의 실제 주소에 가상 주소의 매핑
+	struct thread *t = thread_current();
+	bool success = pml4_set_page(t->pml4,page->va,frame->kva, page->writable);
+	
+	if (success){
+		return swap_in (page, frame->kva);
+	}	
+	return false;
+	
 }
 
 /* Initialize new supplemental page table */

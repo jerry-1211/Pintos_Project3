@@ -71,6 +71,9 @@ uint64_t *pml4e_walk(uint64_t *pml4e, const uint64_t va, int create) {
             if (create) {
                 uint64_t *new_page = palloc_get_page(PAL_ZERO);
                 if (new_page) {
+                    // 페이지 테이블 엔트리를 사용자 모드에서 접근 가능하도록 
+                    // 페이지를 읽기/쓰기가 가능하도록
+                    // 페이지가 메모리에 존재함을 나타냄
                     pml4e[idx] = vtop(new_page) | PTE_U | PTE_W | PTE_P;
                     allocated = 1;
                 } else
@@ -242,7 +245,7 @@ void pml4_clear_page(uint64_t *pml4, void *upage) {
 
 /* Returns true if the PTE for virtual page VPAGE in PML4 is dirty,
  * that is, if the page has been modified since the PTE was
- * installed.
+ * installed.vm_do_claim_page 
  * Returns false if PML4 contains no PTE for VPAGE. */
 bool pml4_is_dirty(uint64_t *pml4, const void *vpage) {
     uint64_t *pte = pml4e_walk(pml4, (uint64_t)vpage, false);
