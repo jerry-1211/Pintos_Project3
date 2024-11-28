@@ -184,6 +184,13 @@ vm_claim_page (void *va UNUSED) {
 	/* TODO: Fill this function */
 	struct thread *t = thread_current();
 	page = spt_find_page(&t->spt, va);
+
+	/*
+	pml4_get_page 같은 경우, 이미 매핑된 va를 pml4 테이블에서 찾는 것
+	spt_find_page 같은 경우, 해당 프로세스에 관리 중인 가상 페이지에 대한 정보가 있고
+	여기에서 아직 매핑되지 않는 va를 찾는다. 
+	두 테이블의 정보 개수 비교 : SPT ≥ PML4
+	*/
 	
 	if(page == NULL){
 		return false;
