@@ -3,7 +3,9 @@
 #include "threads/malloc.h"
 #include "vm/vm.h"
 #include "vm/inspect.h"
-#include "threads/vaddr.h"
+#include "threads/vaddr.h"'
+#include "vm/uninit.h"
+
 
 /* Initializes the virtual memory subsystem by invoking each subsystem's
  * intialize codes. */
@@ -40,7 +42,11 @@ static struct frame *vm_evict_frame (void);
 
 /* Create the pending page object with initializer. If you want to create a
  * page, do not create it directly and make it through this function or
- * `vm_alloc_page`. */
+ * `vm_alloc_page`.
+ * 커널이 새 페이지 요청 받으면 호출되는 함수
+ * 페이지 구조체를 할당하여 새로운 페이지 initialize
+ * 페이지 타입에 맞추고 user program에게 control back */
+
 bool
 vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		vm_initializer *init, void *aux) {
@@ -50,13 +56,37 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 	struct supplemental_page_table *spt = &thread_current ()->spt;
 
 	/* Check wheter the upage is already occupied or not. */
+	//  1은 anonymous, 2는 filebacked
 	if (spt_find_page (spt, upage) == NULL) {
 		/* TODO: Create the page, fetch the initialier according to the VM type,
 		 * TODO: and then create "uninit" page struct by calling uninit_new. You
 		 * TODO: should modify the field after calling the uninit_new. */
-
 		/* TODO: Insert the page into the spt. */
+		/* uninit_new에 맞는 함수 매개 변수 선언해야 함 
+			여기에서 원하는 것은 uninit page 생성 후 spt에 삽입*/
+
+
+		// 1. 페이지 할당 
+		struct page * page = (struct page*)malloc(sizeof(struct page));
+
+		// 2. 함수 포인터  
+		bool (*initializer)(struct page *, enum vm_type, void *);
+
+		// type에 따라 초기화 함수 정의
+		if(VM_TYPE(type) == VM_ANON){
+			initializer = anon_initializer;
+		}else if(type == VM_FILE){
+			initializer = file_backed_initializer;
+		 }
+		
+		uninit_new (page, upage, init, type, aux, initializer);
+
+		page->writable = writable; 
+
+		spt_insert_page(spt,page);
 	}
+
+
 err:
 	return false;
 }

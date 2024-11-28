@@ -11,7 +11,6 @@
 #include "vm/vm.h"
 #include "vm/uninit.h"
 
-static bool uninit_initialize (struct page *page, void *kva);
 static void uninit_destroy (struct page *page);
 
 /* DO NOT MODIFY this struct */
@@ -43,6 +42,8 @@ uninit_new (struct page *page, void *va, vm_initializer *init,
 }
 
 /* Initalize the page on first fault */
+// 오류 처리 절차 중에 uninit_initialize가 호출되고 이전에 설정한 initializer 호출
+// initializer (anon_initializer 또는 file_backed_initializer)
 static bool
 uninit_initialize (struct page *page, void *kva) {
 	struct uninit_page *uninit = &page->uninit;
