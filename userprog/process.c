@@ -654,14 +654,36 @@ static bool install_page(void *upage, void *kpage, bool writable) {
     return (pml4_get_page(t->pml4, upage) == NULL && pml4_set_page(t->pml4, upage, kpage, writable));
 }
 #else
+
 /* From here, codes will be used after project 3.
  * If you want to implement the function for only project 2, implement it on the
  * upper block. */
 
+
+// find the file to read the segment from and eventually read the segment into memory.
 static bool lazy_load_segment(struct page *page, void *aux) {
+
     /* TODO: Load the segment from the file */
     /* TODO: This called when the first page fault occurs on address VA. */
     /* TODO: VA is available when calling this function. */
+    struct container *container = aux; 
+    struct file *file = container->file;
+    size_t page_read_bytes = container->page_read_bytes;
+    size_t page_zero_bytes = container->page_zero_bytes;
+
+    file_seek(file, container->ofs);
+    
+    /* Load this page. */
+    if (file_read(file, page->frame->kva, page_read_bytes) != (int)page_read_bytes) {
+        palloc_free_page(page->frame->kva);
+        return false;
+    }
+
+    // page_read_bytes + page_zero_bytes == PGSIZE 이여야 함
+    memset(page->frame->kva + page_read_bytes, 0, page_zero_bytes);
+
+    return true;
+
 }
 
 /* Loads a segment starting at offset OFS in FILE at address
@@ -692,8 +714,6 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage, uint32_t 
 
         /* TODO: Set up aux to pass information to the lazy_load_segment. */
         struct container *aux = (struct container *)malloc(sizeof(struct container));
-
-        // struct container *container = (struct container *)malloc(sizeof(struct container));
         aux ->file = file;
         aux ->ofs = ofs;
         aux ->page_read_bytes = page_read_bytes;
