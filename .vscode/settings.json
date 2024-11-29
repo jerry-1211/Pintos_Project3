@@ -2,6 +2,7 @@
     "files.associations": {
         "malloc.h": "c",
         "vm.h": "c",
-        "uninit.h": "c"
+        "uninit.h": "c",
+        "page_cache.h": "c"
     }
 }

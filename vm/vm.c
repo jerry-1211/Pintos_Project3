@@ -65,7 +65,6 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		/* uninit_new에 맞는 함수 매개 변수 선언해야 함 
 			여기에서 원하는 것은 uninit page 생성 후 spt에 삽입*/
 
-
 		// 1. 페이지 할당 
 		struct page * page = (struct page*)malloc(sizeof(struct page));
 

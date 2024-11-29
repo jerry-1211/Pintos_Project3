@@ -20,6 +20,8 @@
 #include "threads/vaddr.h"
 #include "userprog/gdt.h"
 #include "userprog/tss.h"
+#include "userprog/process.h"
+
 
 #ifdef VM
 #include "vm/vm.h"
@@ -689,7 +691,16 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage, uint32_t 
         size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
         /* TODO: Set up aux to pass information to the lazy_load_segment. */
-        void *aux = NULL;
+        struct container *aux = (struct container *)malloc(sizeof(struct container));
+
+        // struct container *container = (struct container *)malloc(sizeof(struct container));
+        aux ->file = file;
+        aux ->ofs = ofs;
+        aux ->page_read_bytes = page_read_bytes;
+        aux ->page_zero_bytes = page_zero_bytes;
+        aux ->writable = writable;
+        
+
         if (!vm_alloc_page_with_initializer(VM_ANON, upage, writable, lazy_load_segment, aux))
             return false;
 
@@ -697,6 +708,8 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage, uint32_t 
         read_bytes -= page_read_bytes;
         zero_bytes -= page_zero_bytes;
         upage += PGSIZE;
+
+        ofs += page_read_bytes;
     }
     return true;
 }

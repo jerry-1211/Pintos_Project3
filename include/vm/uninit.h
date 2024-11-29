@@ -6,6 +6,8 @@ struct page;
 enum vm_type;
 
 typedef bool vm_initializer (struct page *, void *aux);
+static bool uninit_initialize (struct page *page, void *kva);
+
 
 /* Uninitlialized page. The type for implementing the
  * "Lazy loading". */

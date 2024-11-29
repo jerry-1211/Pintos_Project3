@@ -20,6 +20,16 @@ struct file *process_get_file(int fd);
 int process_close_file(int fd);
 process_insert_file(int fd, struct file *f);
 
+
+struct container{
+	struct file *file ; 
+	off_t ofs ;
+	size_t page_read_bytes;
+	size_t page_zero_bytes;
+	bool writable;
+
+};
+
 #define STDIN 1
 #define STDOUT 2
 #define STDERR 3

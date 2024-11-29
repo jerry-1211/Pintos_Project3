@@ -245,7 +245,7 @@ void pml4_clear_page(uint64_t *pml4, void *upage) {
 
 /* Returns true if the PTE for virtual page VPAGE in PML4 is dirty,
  * that is, if the page has been modified since the PTE was
- * installed.vm_do_claim_page 
+ * installed.
  * Returns false if PML4 contains no PTE for VPAGE. */
 bool pml4_is_dirty(uint64_t *pml4, const void *vpage) {
     uint64_t *pte = pml4e_walk(pml4, (uint64_t)vpage, false);
