@@ -734,6 +734,8 @@ static bool load_segment(struct file *file, off_t ofs, uint8_t *upage, uint32_t 
 /* Create a PAGE of stack at the USER_STACK. Return true on success. */
 static bool setup_stack(struct intr_frame *if_) {
     bool success = false;
+
+    // 스택이여서 위 → 아래로 쌓임 
     void *stack_bottom = (void *)(((uint8_t *)USER_STACK) - PGSIZE);
 
     /* TODO: Map the stack on stack_bottom and claim the page immediately.
@@ -743,6 +745,7 @@ static bool setup_stack(struct intr_frame *if_) {
 
     if (vm_alloc_page_with_initializer(VM_ANON | VM_MARKER_0, stack_bottom, 1, NULL, NULL)){
         if (success = vm_claim_page(stack_bottom)){
+            // stack_bottom은 메모리 할당을 위해 사용되고, USER_STACK은 rsp는 데이터 접근을 위해 사용
             if_->rsp = USER_STACK;
             success = true;
         }
