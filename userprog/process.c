@@ -741,10 +741,10 @@ static bool setup_stack(struct intr_frame *if_) {
      * TODO: You should mark the page is stack. */
     /* TODO: Your code goes here */
 
-    if (vm_alloc_page_with_initializer(VM_ANON, stack_bottom, 1, NULL, NULL)){
+    if (vm_alloc_page_with_initializer(VM_ANON | VM_MARKER_0, stack_bottom, 1, NULL, NULL)){
         if (success = vm_claim_page(stack_bottom)){
-            if_->rsp = stack_bottom;
-            return success;
+            if_->rsp = USER_STACK;
+            success = true;
         }
     }
 
