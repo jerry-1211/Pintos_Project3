@@ -198,13 +198,14 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED, bool user U
 	// printf("🚨 Address: %p\n", addr);
 
 	if(not_present){
+		//  사실상 이 부분이 핵심 (페이지를 구해야 하기 떄문에)
 		page = spt_find_page(spt,addr);
 		if(page == NULL){
 			return false;
 		}
-		if(write==1 && page->writable == 0){
-			return false ;
-		}
+		// if(write==1 && page->writable == 0){
+		// 	return false ;
+		// }
 		return vm_do_claim_page (page);
 	}
 	
