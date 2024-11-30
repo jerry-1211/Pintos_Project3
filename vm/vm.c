@@ -82,7 +82,8 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 
 		page->writable = writable; 
 
-		spt_insert_page(spt,page);
+		return spt_insert_page(spt,page);
+
 	}
 
 
@@ -156,24 +157,23 @@ vm_evict_frame (void) {
  * You don't need to handle swap out for now in case of page allocation failure. Just mark those case with PANIC ("todo") for now.
 */
 static struct frame *
-vm_get_frame (void) {
-	/* TODO: Fill this function. */
-	// 목표 : 유저 pool로부터 새로운 프레임 얻기 
-	struct frame *frame = NULL;
+vm_get_frame(void)
+{
+    // 프레임 구조체 할당
+    struct frame *frame = malloc(sizeof(struct frame));
+    ASSERT(frame != NULL);
 
-	uint8_t *kva = palloc_get_page(PAL_USER);   // userpool에서 page 할당
+    frame->kva = palloc_get_page(PAL_USER | PAL_ZERO);
 
-	// 할당 실패하는 경우 PANIC 처리 -> 이후 swap 구현 
-	if(kva==NULL){   
-		PANIC ("todo");
-	}
+    if (frame->kva == NULL)
+        frame = vm_evict_frame();
 
-	frame = (struct frame *)malloc(sizeof(struct frame));
-	frame->kva = kva;
-	
-	ASSERT (frame != NULL);
-	ASSERT (frame->page == NULL);
-	return frame;
+
+    frame->page = NULL; // 초기에는 연결된 페이지가 없음
+
+    ASSERT(frame->page == NULL);
+
+    return frame; // 초기화된 프레임 반환
 }
 
 /* Growing the stack. */
@@ -239,17 +239,38 @@ static bool
 vm_do_claim_page (struct page *page) {
 	struct frame *frame = vm_get_frame ();
 
+
+	// if (!frame || !frame->kva) {
+    // PANIC("🚨 Invalid frame returned by vm_get_frame!");
+	// }
+	// if (!page || !page->va) {
+    // PANIC("🚨 Invalid page structure!");
+	// }	
+	// if (page == NULL || frame == NULL) {
+	// 	PANIC("🚨 NULL pointer exception at page or frame!");
+	// }
+
+
+	if(frame == NULL){
+		return false;
+	}
+
 	/* Set links */
 	frame->page = page;
 	page->frame = frame;
 
 	/* TODO: Insert page table entry to map page's VA to frame's PA. */
 	// * 페이지 테이블의 실제 주소에 가상 주소의 매핑
+
 	struct thread *t = thread_current();
 	bool success = pml4_set_page(t->pml4,page->va,frame->kva, page->writable);
 	
 	if (success){
 		return swap_in (page, frame->kva);
+	}else{
+		palloc_free_page(frame->kva);
+		free(frame);
+		return false;
 	}	
 	return false;
 	
