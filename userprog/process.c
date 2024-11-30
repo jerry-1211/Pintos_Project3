@@ -661,29 +661,26 @@ static bool install_page(void *upage, void *kpage, bool writable) {
 
 
 // find the file to read the segment from and eventually read the segment into memory.
-static bool lazy_load_segment(struct page *page, void *aux) {
+bool lazy_load_segment(struct page *page, void *aux)
+{
+	/* TODO: Load the segment from the file */
+	/* TODO: This called when the first page fault occurs on address VA. */
+	/* TODO: VA is available when calling this function. */
 
-    /* TODO: Load the segment from the file */
-    /* TODO: This called when the first page fault occurs on address VA. */
-    /* TODO: VA is available when calling this function. */
-    struct container *container = aux; 
-    struct file *file = container->file;
-    size_t page_read_bytes = container->page_read_bytes;
-    size_t page_zero_bytes = container->page_zero_bytes;
+	struct container *lazy_load_arg = (struct container *)aux;
 
-    file_seek(file, container->ofs);
-    
-    /* Load this page. */
-    if (file_read(file, page->frame->kva, page_read_bytes) != (int)page_read_bytes) {
-        palloc_free_page(page->frame->kva);
-        return false;
-    }
+	// 1) 파일의 position을 ofs으로 지정한다.
+	file_seek(lazy_load_arg->file, lazy_load_arg->ofs);
+	// 2) 파일을 read_bytes만큼 물리 프레임에 읽어 들인다.
+	if (file_read(lazy_load_arg->file, page->frame->kva, lazy_load_arg->page_read_bytes) != (int)(lazy_load_arg->page_read_bytes))
+	{
+		palloc_free_page(page->frame->kva);
+		return false;
+	}
+	// 3) 다 읽은 지점부터 zero_bytes만큼 0으로 채운다.make
+	memset(page->frame->kva + lazy_load_arg->page_read_bytes, 0, lazy_load_arg->page_zero_bytes);
 
-    // page_read_bytes + page_zero_bytes == PGSIZE 이여야 함
-    memset(page->frame->kva + page_read_bytes, 0, page_zero_bytes);
-
-    return true;
-
+	return true;
 }
 
 /* Loads a segment starting at offset OFS in FILE at address
@@ -743,6 +740,13 @@ static bool setup_stack(struct intr_frame *if_) {
      * TODO: If success, set the rsp accordingly.
      * TODO: You should mark the page is stack. */
     /* TODO: Your code goes here */
+
+    if (vm_alloc_page_with_initializer(VM_ANON, stack_bottom, 1, NULL, NULL)){
+        if (success = vm_claim_page(stack_bottom)){
+            if_->rsp = stack_bottom;
+            return success;
+        }
+    }
 
     return success;
 }

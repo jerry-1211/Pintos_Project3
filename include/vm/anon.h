@@ -8,7 +8,7 @@ enum vm_type;
 // add members to store necessary information or state of an anonymous page 
 struct anon_page {
 
-    struct anon_page anon;
+    // struct anon_page anon;
 
 };
 
