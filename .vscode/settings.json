@@ -6,6 +6,7 @@
         "page_cache.h": "c",
         "thread.h": "c",
         "vaddr.h": "c",
-        "filesys.h": "c"
+        "filesys.h": "c",
+        "*.inc": "c"
     }
 }

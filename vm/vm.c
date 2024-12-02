@@ -101,6 +101,7 @@ spt_find_page (struct supplemental_page_table *spt UNUSED, void *va UNUSED) {
 
 	// 페이지 할당  - page va 대입 - hash find 함수 - return hash_elem
 	struct page *p = (struct page *)malloc(sizeof(struct page));
+
 	p->va = pg_round_down(va);
 	struct hash_elem *e = hash_find (h, &p->hash_elem);
 	free(p);
@@ -303,11 +304,12 @@ bool
 supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 		struct supplemental_page_table *src UNUSED) {
 
-	struct hash_iterator *i; 
-	hash_first(i,&src->spt_hash);
+	// 스택에 객체 생성 
+	struct hash_iterator i; 
+	hash_first(&i,&src->spt_hash);
 
-	while(hash_next(i)){
-		struct page *src_page = hash_entry(hash_cur(i), struct page, hash_elem);
+	while(hash_next(&i)){
+		struct page *src_page = hash_entry(hash_cur(&i), struct page, hash_elem);
 		void * upage = src_page->va;
 		bool writable = src_page->writable;
 
@@ -318,10 +320,11 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 			vm_initializer *init = (&src_page->uninit)->init;
 			void *aux = (&src_page->uninit)->aux;
 			vm_alloc_page_with_initializer(VM_ANON | VM_MARKER_0, upage, writable, init, aux);
+			continue;
 		}
 
 		// vm_type이 UNINT 이외의 경우
-		if (!vm_alloc_page_with_initializer(type,upage,writable,NULL,NULL)){
+		if (!vm_alloc_page_with_initializer(type, upage, writable, NULL, NULL)){
 			return false ; 	
 		}
 
