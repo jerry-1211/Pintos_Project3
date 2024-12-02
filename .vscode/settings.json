@@ -3,6 +3,9 @@
         "malloc.h": "c",
         "vm.h": "c",
         "uninit.h": "c",
-        "page_cache.h": "c"
+        "page_cache.h": "c",
+        "thread.h": "c",
+        "vaddr.h": "c",
+        "filesys.h": "c"
     }
 }

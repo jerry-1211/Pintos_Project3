@@ -6,6 +6,8 @@
 #include "threads/vaddr.h"'
 #include "vm/uninit.h"
 #include "threads/mmu.h"
+#include "lib/kernel/hash.h"
+#include <string.h>
 
 
 /* Initializes the virtual memory subsystem by invoking each subsystem's
@@ -87,7 +89,6 @@ vm_alloc_page_with_initializer (enum vm_type type, void *upage, bool writable,
 		return spt_insert_page(spt,page);
 
 	}
-
 
 err:
 	return false;
@@ -210,8 +211,6 @@ vm_try_handle_fault (struct intr_frame *f UNUSED, void *addr UNUSED, bool user U
 	}
 	
 	return false ;
-
-	
 }
 
 /* Free the page.
@@ -299,9 +298,43 @@ supplemental_page_table_init (struct supplemental_page_table *spt UNUSED) {
 }
 
 /* Copy supplemental page table from src to dst */
+// 이 함수 같은 경우 자식 프로세스가 실행 중이라는 전재
 bool
 supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 		struct supplemental_page_table *src UNUSED) {
+
+	struct hash_iterator *i; 
+	hash_first(i,&src->spt_hash);
+
+	while(hash_next(i)){
+		struct page *src_page = hash_entry(hash_cur(i), struct page, hash_elem);
+		void * upage = src_page->va;
+		bool writable = src_page->writable;
+
+		// vm_alloc_page_with_initializer로 새로운 페이지 할당 및 spt의 엔트리 추가 
+		// vm_type이 UNINT 인 경우 
+		enum vm_type type = src_page->operations->type;
+		if(type == VM_UNINIT){
+			vm_initializer *init = (&src_page->uninit)->init;
+			void *aux = (&src_page->uninit)->aux;
+			vm_alloc_page_with_initializer(VM_ANON | VM_MARKER_0, upage, writable, init, aux);
+		}
+
+		// vm_type이 UNINT 이외의 경우
+		if (!vm_alloc_page_with_initializer(type,upage,writable,NULL,NULL)){
+			return false ; 	
+		}
+
+		// VA를 PA와 매핑
+		if(!vm_claim_page(upage)){
+			return false ;
+		}
+
+		struct page *dst_page = spt_find_page(dst,upage);
+		memcpy(dst_page->frame->kva,src_page->frame->kva,PGSIZE);
+	}
+
+	return true;
 }
 
 /* Free the resource hold by the supplemental page table */
