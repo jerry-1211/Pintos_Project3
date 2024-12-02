@@ -112,10 +112,20 @@ void syscall_handler(struct intr_frame *f UNUSED) {
     }
 }
 
+#ifndef VM
 void check_address(void *addr) {
     if (is_kernel_vaddr(addr) || addr == NULL || pml4_get_page(thread_current()->pml4, addr) == NULL)
         exit(-1);
 }
+#endif
+
+#ifdef VM
+void check_address(void *addr) {
+    if (is_kernel_vaddr(addr) || addr == NULL )
+        exit(-1);
+    spt_find_page(&thread_current()->spt,addr);
+}
+#endif
 
 void halt(void) {
     power_off();

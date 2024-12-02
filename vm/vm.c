@@ -307,7 +307,7 @@ supplemental_page_table_copy (struct supplemental_page_table *dst UNUSED,
 	// 스택에 객체 생성 
 	struct hash_iterator i; 
 	hash_first(&i,&src->spt_hash);
-
+  
 	while(hash_next(&i)){
 		struct page *src_page = hash_entry(hash_cur(&i), struct page, hash_elem);
 		void * upage = src_page->va;
