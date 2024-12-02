@@ -82,6 +82,7 @@ struct hash_elem *hash_replace (struct hash *, struct hash_elem *);
 struct hash_elem *hash_find (struct hash *, struct hash_elem *);
 struct hash_elem *hash_delete (struct hash *, struct hash_elem *);
 
+
 /* Iteration. */
 void hash_apply (struct hash *, hash_action_func *);
 void hash_first (struct hash_iterator *, struct hash *);
@@ -101,6 +102,7 @@ uint64_t hash_int (int);
 uint64_t hash_func (const struct hash_elem *e, void *aux);
 bool less_func (const struct hash_elem *a, const struct hash_elem *b, void *aux);
 void action_func (struct hash_elem *e, void *aux);
-struct hash_action_func hash_page_destory(struct hash_elem *e, void *aux);
+void hash_page_destory(struct hash_elem *e, void *aux);
+
 
 #endif /* lib/kernel/hash.h */

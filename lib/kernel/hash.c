@@ -130,8 +130,9 @@ struct hash_elem *hash_find (struct hash *h, struct hash_elem *e) {
    If the elements of the hash table are dynamically allocated,
    or own resources that are, then it is the caller's
    responsibility to deallocate them. */
+
 struct hash_elem *
-hash_delete (struct hash *h, struct khash_elem *e) {
+hash_delete (struct hash *h, struct hash_elem *e) {
 	struct hash_elem *found = find_elem (h, find_bucket (h, e), e);
 	if (found != NULL) {
 		remove_elem (h, found);
@@ -410,4 +411,4 @@ void hash_page_destory(struct hash_elem *e, void *aux){
 	struct page *page = hash_entry(e,struct page, hash_elem);
 	destroy (page);
 	free (page);
-}	
+}
