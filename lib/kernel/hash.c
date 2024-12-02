@@ -61,7 +61,6 @@ hash_clear (struct hash *h, hash_action_func *destructor) {
 				struct hash_elem *hash_elem = list_elem_to_hash_elem (list_elem);
 				destructor (hash_elem, h->aux);
 			}
-
 		list_init (bucket);
 	}
 
@@ -132,7 +131,7 @@ struct hash_elem *hash_find (struct hash *h, struct hash_elem *e) {
    or own resources that are, then it is the caller's
    responsibility to deallocate them. */
 struct hash_elem *
-hash_delete (struct hash *h, struct hash_elem *e) {
+hash_delete (struct hash *h, struct khash_elem *e) {
 	struct hash_elem *found = find_elem (h, find_bucket (h, e), e);
 	if (found != NULL) {
 		remove_elem (h, found);
@@ -401,9 +400,14 @@ bool less_func (const struct hash_elem *a, const struct hash_elem *b, void *aux)
 	struct page *page_a = hash_entry(a, struct page, hash_elem);
 	struct page *page_b = hash_entry(b, struct page, hash_elem);
 	return page_a->va < page_b->va ;
-
 }
 
 void action_func (struct hash_elem *e, void *aux){
 
 }
+
+void hash_page_destory(struct hash_elem *e, void *aux){
+	struct page *page = hash_entry(e,struct page, hash_elem);
+	destroy (page);
+	free (page);
+}	
